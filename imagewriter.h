@@ -7,12 +7,14 @@
 class ImageWriter : public IImageProcessor
 {
 public:
-    explicit ImageWriter( const std::string& filePrefix );
+    static Ptr Create( const std::string& filePrefix );
     virtual ~ImageWriter();
 
     virtual void ProcessImage( Image& image );
 
 private:
+    explicit ImageWriter( const std::string& filePrefix );
+    
     std::string     m_filePrefix;
     unsigned long   m_count;
 };
