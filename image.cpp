@@ -21,6 +21,4 @@ void Image::Save( const std::string& filename )
     std::ofstream file( filename.c_str(), std::ios::binary | std::ios::out );
     char* data = (char*)( m_data.data() );
     file.write( const_cast<const char*>(data), m_data.size() );
-    //fwrite( const_cast<const signed char*>(data), m_data.size(), 1, stdout);
-    //fflush(stdout);
 }
