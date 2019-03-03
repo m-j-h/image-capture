@@ -6,6 +6,7 @@ LIBS = -L/usr/lib/x86_64-linux-gnu -lSDL2
 
 HDRS = \
 camera.h \
+controller.h \
 device.h \
 image.h \
 iimageprocessor.h \
@@ -14,6 +15,7 @@ imagewriter.h
 SRCS = \
 imagecapture.cpp \
 camera.cpp \
+controller.cpp \
 device.cpp \
 image.cpp \
 imagewriter.cpp
