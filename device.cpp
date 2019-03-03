@@ -12,8 +12,6 @@ Device::Device( const std::string& device )
 {
     struct stat st;
 
-    Log("Device::Device() started");
-
     if( stat(device.c_str(), &st) == -1 ) 
     {
         throw std::runtime_error("stat() failed");
@@ -29,7 +27,6 @@ Device::Device( const std::string& device )
     {
         throw std::runtime_error("open()");
     }
-    Log("Device::Device() completed");
 }
 
 Device::~Device()
@@ -44,8 +41,6 @@ Device::~Device()
 
 void Device::IoctlImpl( unsigned long request, void* param )
 {
-    Log( "Entered Device::IoctlImp" );
-
     int r = 0;
     do 
     {
@@ -57,10 +52,4 @@ void Device::IoctlImpl( unsigned long request, void* param )
     {
         throw std::runtime_error("Device: ioctl() failed");
     }
-    Log( "Leaving Device::IoctlImp" );
-}
-
-void Device::Log( const std::string& text )
-{
-    std::cerr << "DEVICE: " << text << std::endl;
 }
