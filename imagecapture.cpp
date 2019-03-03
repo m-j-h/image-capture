@@ -4,6 +4,7 @@
 #include "image.h"
 #include "camera.h"
 #include "imagewriter.h"
+#include "controller.h"
 
 int main( int argc, char** argv )
 {
@@ -15,9 +16,8 @@ int main( int argc, char** argv )
 
     try
     {
-        Camera camera( "/dev/video0" );
-        auto imageWriter = ImageWriter::Create( filePrefix );
-        camera.CaptureImage( imageWriter );
+        Controller controller( "/dev/video0", "image" );
+        controller.Run();
     }
     catch( std::exception& ex )
     {
