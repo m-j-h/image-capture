@@ -20,8 +20,7 @@ void Clear( T& object )
 Camera::Camera( const std::string& device )
 :   m_device( device ),
     m_buffers( nullptr ),
-    m_nBuffers( 0 ),
-    m_imageProcessors()
+    m_nBuffers( 0 )
 {
     struct v4l2_capability cap;
     m_device.Ioctl( VIDIOC_QUERYCAP, &cap );
@@ -71,15 +70,10 @@ Camera::~Camera()
     m_buffers = nullptr;
 }
 
-void Camera::AddImageProcessor( const IImageProcessor::Ptr& imageProcessor )
-{
-    m_imageProcessors.push_back( imageProcessor );
-}
-
-void Camera::CaptureImage()
+void Camera::CaptureImage( const IImageProcessor::Ptr& imageProcessor )
 {
     Start();
-    CaptureLoop();
+    CaptureLoop( imageProcessor );
     Stop();
 }
 
@@ -148,7 +142,7 @@ void Camera::Start()
     m_device.Ioctl( VIDIOC_STREAMON, &type );
 }
 
-void Camera::CaptureLoop()
+void Camera::CaptureLoop( const IImageProcessor::Ptr& imageProcessor )
 {
     unsigned int count = 1;
     while (count-- > 0) 
@@ -178,13 +172,13 @@ void Camera::CaptureLoop()
             {
                 throw std::runtime_error("select timeout");
             }
-            ReadFrame();
+            ReadFrame( imageProcessor );
             return;
         }
     }
 }
 
-void Camera::ReadFrame()
+void Camera::ReadFrame( const IImageProcessor::Ptr& imageProcessor )
 {
     struct v4l2_buffer buf;
     unsigned int i;
@@ -194,13 +188,13 @@ void Camera::ReadFrame()
     buf.memory = V4L2_MEMORY_MMAP;
 
     m_device.Ioctl( VIDIOC_DQBUF, &buf);
-    Image image = WriteFrame(m_buffers[buf.index].start, buf.bytesused);
+    Image image = CreateImage(m_buffers[buf.index].start, buf.bytesused);
     m_device.Ioctl( VIDIOC_QBUF, &buf);
 
-    ProcessImage( image );
+    imageProcessor->ProcessImage( image );
 }
 
-Image Camera::WriteFrame(const void *p, int size )
+Image Camera::CreateImage( const void *p, int size )
 {
     return Image( (unsigned char*)(p), size );
 }
@@ -214,14 +208,4 @@ void Camera::Stop()
 void Camera::Log( const std::string& text )
 {
     std::cerr << "LOG: " << text << std::endl;
-}
-
-void Camera::ProcessImage( Image& image )
-{
-    std::for_each(  m_imageProcessors.begin(),
-                    m_imageProcessors.end(),
-                    [&image]( auto& processor )
-                    {
-                        processor->ProcessImage( image );
-                    } );
 }

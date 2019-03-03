@@ -16,9 +16,8 @@ int main( int argc, char** argv )
     try
     {
         Camera camera( "/dev/video0" );
-        camera.AddImageProcessor( IImageProcessor::Ptr( new ImageWriter( filePrefix ) ) );        
-        camera.CaptureImage();
-        //image.Save( filename );
+        IImageProcessor::Ptr imageWriter( new ImageWriter( filePrefix ) );
+        camera.CaptureImage( imageWriter );
     }
     catch( std::exception& ex )
     {
