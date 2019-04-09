@@ -8,8 +8,8 @@
 class Controller
 {
 public:
-    explicit Controller( const std::string& cameraDevice,
-                            const std::string& filePrefix );
+    Controller( const std::string& cameraDevice,
+                const std::string& filePrefix );
     ~Controller();
 
     void Run();

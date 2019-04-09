@@ -1,10 +1,8 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "image.h"
 #include "camera.h"
 #include "imagewriter.h"
-#include "controller.h"
 
 int main( int argc, char** argv )
 {
@@ -16,8 +14,9 @@ int main( int argc, char** argv )
 
     try
     {
-        Controller controller( "/dev/video0", "image" );
-        controller.Run();
+        Camera camera( "/dev/video0" );
+        auto imageWriter = ImageWriter::Create( filePrefix );
+        camera.CaptureImage( imageWriter );
     }
     catch( std::exception& ex )
     {
