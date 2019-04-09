@@ -6,7 +6,6 @@
 
 #include "image.h"
 #include "device.h"
-#include "iimageprocessor.h"
 
 class Camera
 {
