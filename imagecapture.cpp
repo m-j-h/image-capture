@@ -15,8 +15,8 @@ int main( int argc, char** argv )
     try
     {
         Camera camera( "/dev/video0" );
-        auto imageWriter = ImageWriter::Create( filePrefix );
-        camera.CaptureImage( imageWriter );
+        auto image = camera.CaptureImage();
+        image.Save( "foo.img" );
     }
     catch( std::exception& ex )
     {

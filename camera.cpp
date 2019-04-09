@@ -70,11 +70,13 @@ Camera::~Camera()
     m_buffers = nullptr;
 }
 
-void Camera::CaptureImage( const IImageProcessor::Ptr& imageProcessor )
+Image Camera::CaptureImage()
 {
     Start();
-    CaptureLoop( imageProcessor );
+    auto image = CaptureLoop();
     Stop();
+
+    return image;
 }
 
 void Camera::InitMemMap()
@@ -128,57 +130,52 @@ void Camera::Start()
 {
     for (unsigned int i = 0; i < m_nBuffers; ++i)
     {
-            struct v4l2_buffer buf;
-            Clear(buf);
+        struct v4l2_buffer buf;
+        Clear(buf);
 
-            buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-            buf.memory = V4L2_MEMORY_MMAP;
-            buf.index = i;
+        buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+        buf.memory = V4L2_MEMORY_MMAP;
+        buf.index = i;
 
-            m_device.Ioctl( VIDIOC_QBUF, &buf );
+        m_device.Ioctl( VIDIOC_QBUF, &buf );
     }
 
     enum v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     m_device.Ioctl( VIDIOC_STREAMON, &type );
 }
 
-void Camera::CaptureLoop( const IImageProcessor::Ptr& imageProcessor )
+Image Camera::CaptureLoop()
 {
-    unsigned int count = 1;
-    while (count-- > 0) 
+    for (;;) 
     {
-        for (;;) 
+        fd_set fds;
+        FD_ZERO(&fds);
+        FD_SET(m_device.Fd(), &fds);
+
+        /* Timeout. */
+        struct timeval tv;
+        tv.tv_sec = 5;
+        tv.tv_usec = 0;
+
+        int r = select(m_device.Fd() + 1, &fds, NULL, NULL, &tv);
+        if( r == -1 ) 
         {
-            fd_set fds;
-            FD_ZERO(&fds);
-            FD_SET(m_device.Fd(), &fds);
-
-            /* Timeout. */
-            struct timeval tv;
-            tv.tv_sec = 5;
-            tv.tv_usec = 0;
-
-            int r = select(m_device.Fd() + 1, &fds, NULL, NULL, &tv);
-            if( r == -1 ) 
+            if( EINTR == errno )
             {
-                if( EINTR == errno )
-                {
-                    continue;
-                }
-                throw std::runtime_error("select() failed");
+                continue;
             }
-
-            if(0 == r) 
-            {
-                throw std::runtime_error("select timeout");
-            }
-            ReadFrame( imageProcessor );
-            return;
+            throw std::runtime_error("select() failed");
         }
+
+        if(0 == r) 
+        {
+            throw std::runtime_error("select timeout");
+        }
+        return ReadFrame();
     }
 }
 
-void Camera::ReadFrame( const IImageProcessor::Ptr& imageProcessor )
+Image Camera::ReadFrame()
 {
     struct v4l2_buffer buf;
     unsigned int i;
@@ -190,8 +187,7 @@ void Camera::ReadFrame( const IImageProcessor::Ptr& imageProcessor )
     m_device.Ioctl( VIDIOC_DQBUF, &buf);
     Image image = CreateImage(m_buffers[buf.index].start, buf.bytesused);
     m_device.Ioctl( VIDIOC_QBUF, &buf);
-
-    imageProcessor->ProcessImage( image );
+    return image;
 }
 
 Image Camera::CreateImage( const void *p, int size )

@@ -14,7 +14,7 @@ public:
     explicit Camera( const std::string& device );
     ~Camera();
 
-    void CaptureImage( const IImageProcessor::Ptr& imageProcessor );
+    Image CaptureImage();
 
 private:
     struct Buffer 
@@ -25,8 +25,8 @@ private:
 
     void InitMemMap();
     void Start();
-    void CaptureLoop( const IImageProcessor::Ptr& imageProcessor );
-    void ReadFrame( const IImageProcessor::Ptr& imageProcessor );
+    Image CaptureLoop();
+    Image ReadFrame();
     Image CreateImage( const void *p, int size );
     void Stop();
     void Log( const std::string& text );
