@@ -2,7 +2,7 @@
 #include <iostream>
 
 #include "camera.h"
-#include "imagewriter.h"
+#include "image.h"
 
 int main( int argc, char** argv )
 {
